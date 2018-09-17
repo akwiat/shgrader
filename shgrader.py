@@ -2,6 +2,8 @@ import cmd
 import csv
 import re
 import os
+import time
+import shutil
 
 completions = [
     'Mage Slayer (Alara Reborn)',
@@ -31,6 +33,7 @@ def process_file(fname):
 class mycmd(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
+        self.prompt = "(shgrader) "
         self.grade_finder = re.compile(r"([^0-9]+, [^0-9]+) ([0-9]*)")
 
     def do_quit(self, s):
@@ -39,6 +42,13 @@ class mycmd(cmd.Cmd):
     def do_add(self, s):
         pass
     
+    def do_quickstart(self, s):
+        list_of_files = os.listdir()
+        latest_file = max(list_of_files, key=os.path.getctime)
+        print("Using: {}\n from: {}".format(latest_file, time.ctime(os.path.getctime(latest_file))))
+        print("(moving it to the input dir)")
+        shutil.move(latest_file, os.path.join("input", latest_file))
+
     def do_file(self, s):
         self.filebase = s
         self.inputfile = os.path.join("input", self.filebase)
@@ -68,17 +78,33 @@ class mycmd(cmd.Cmd):
         # print(r.group(2))
 
     def do_write(self, s):
+        students = []
+
         col_index = self.headers.index(self.column)
-        print("index: ", col_index)
+        # print("index: ", col_index)
         with open(self.outputfile, "w") as outfile:
             writer = csv.writer(outfile)
             with open(self.inputfile) as csvfile:
                 reader = csv.reader(csvfile)
                 for row in reader:
                     student = row[0]
+                    students.append(student)
                     if student in self.data:
                         row[col_index] = self.data[student]
                     writer.writerow(row)
+        print("done.")
+        print("leftover students this session: ")
+        missing = [s for s in students if s not in self.data]
+        print(missing)
+        print("students with blanks: ")
+        blanks = []
+        with open(self.outputfile) as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                student = row[0]
+                if row[col_index] == "":
+                    blanks.append(student)
+        print(blanks)
 
     def complete_g(self, text, line, b, e):
         return [n for n in self.names if n.startswith(text)]
