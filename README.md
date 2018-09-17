@@ -1,4 +1,5 @@
-```python3 shgrader.py
+```
+python3 shgrader.py
 # Export from canvas to this dir
 (shgrader) quickstart
 (shgrader) column <colname>  # double tab to show options
