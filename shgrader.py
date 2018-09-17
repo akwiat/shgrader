@@ -45,9 +45,13 @@ class mycmd(cmd.Cmd):
     def do_quickstart(self, s):
         list_of_files = os.listdir()
         latest_file = max(list_of_files, key=os.path.getctime)
-        print("Using: {}\n from: {}".format(latest_file, time.ctime(os.path.getctime(latest_file))))
-        print("(moving it to the input dir)")
-        shutil.move(latest_file, os.path.join("input", latest_file))
+        if latest_file.endswith(".csv"):
+            print("Using: {}\n  mod: {}".format(latest_file, time.ctime(os.path.getctime(latest_file))))
+            print("(and moving it to the input dir)")
+            shutil.move(latest_file, os.path.join("input", latest_file))
+            self.do_file(latest_file)
+        else:
+            print("bad file? {}".format(latest_file))
 
     def do_file(self, s):
         self.filebase = s
@@ -62,7 +66,7 @@ class mycmd(cmd.Cmd):
 
     def do_column(self, s):
         self.column = s
-        print("column: ", self.column)
+        print("column selected: ", self.column)
 
     def complete_column(self, text, line, b, e):
         # return [h for h in self.headers if h.startswith(text)]
